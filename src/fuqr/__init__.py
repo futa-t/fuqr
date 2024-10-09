@@ -1,12 +1,16 @@
+import subprocess
 import threading
 import tkinter
 from datetime import datetime as dt
+from tkinter import filedialog
 
 import cv2
 import mss
 import mss.tools
 import numpy as np
+import qrcode
 from mss.screenshot import ScreenShot
+from PIL import ImageTk
 
 _TRANSPARENTCOLOR = "hotpink2"
 
@@ -47,6 +51,30 @@ def analyze_from_ss(x, y, width, height) -> str | None:
         return None
 
 
+def save_qrcode_window(value: str):
+    im_qr = qrcode.make(value)
+
+    t = tkinter.Toplevel(padx=8, pady=4)
+    t.title(value)
+    imtk_qr = ImageTk.PhotoImage(im_qr)
+
+    tkinter.Label(t, image=imtk_qr).pack(fill=tkinter.BOTH, expand=True)
+    tkinter.Label(t, text=value).pack(fill=tkinter.X, pady=4)
+
+    def save():
+        file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}_regen.png"
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png")],
+            initialfile=file_name,
+        )
+        if file_path:
+            im_qr.save(file_path)
+
+    tkinter.Button(t, text="保存", command=save).pack(fill=tkinter.X, pady=4)
+    t.wait_window()
+
+
 class QrReader:
     def __init__(self, master: tkinter.Tk | tkinter.Toplevel = None):
         if master:
@@ -61,7 +89,7 @@ class QrReader:
         self._root.wm_attributes("-toolwindow", True)
         self._root.option_add("*Button.cursor", "hand2")
 
-        self.default_msg = "QRコードを枠内に納めてください"
+        self.default_msg = "QRコードを認識できません"
         self.qr_value = None
         self.msg = None
 
@@ -85,14 +113,19 @@ class QrReader:
         tkinter.Button(
             f_save, text="スクリーンショットを保存", command=self.screenshot
         ).place(x=0, y=0, relheight=1, relwidth=0.49)
-        tkinter.Button(f_save, text="エンコードしなおして保存").place(
-            relx=0.51, rely=0, relheight=1, relwidth=0.49
-        )
+        tkinter.Button(
+            f_save,
+            text="エンコードしなおして保存",
+            command=self.encode_save,
+        ).place(relx=0.51, rely=0, relheight=1, relwidth=0.49)
 
         f_cmd = tkinter.Frame(f, height=24)
         f_cmd.propagate(False)
         f_cmd.pack(fill=tkinter.X, pady=2)
-        tkinter.Button(f_cmd, text="開く").place(x=0, y=0, relheight=1, relwidth=0.49)
+        self.btn_open_browser = tkinter.Button(
+            f_cmd, text="ブラウザで開く", command=self.open_browser
+        )
+        self.btn_open_browser.place(x=0, y=0, relheight=1, relwidth=0.49)
         tkinter.Button(f_cmd, text="コピー").place(
             relx=0.51, rely=0, relheight=1, relwidth=0.49
         )
@@ -107,6 +140,14 @@ class QrReader:
         self.th_analyze.start()
 
         self._root.wait_window()
+
+    def open_browser(self):
+        if self.qr_value.startswith("http"):
+            subprocess.Popen(["explorer", self.qr_value])
+
+    def encode_save(self):
+        if self.qr_value:
+            save_qrcode_window(self.qr_value)
 
     def on_move(self, e: tkinter.Event):
         self._root.update_idletasks()
