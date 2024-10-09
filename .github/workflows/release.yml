@@ -1,11 +1,12 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+name: fuqr Release Action
 on: 
   push:
     tags:
       - 'v*'
+      
 permissions:
   contents: write   
+
 jobs:
   Explore-GitHub-Actions:
     runs-on: windows-latest
@@ -32,6 +33,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: .\dist\fuqr.zip
+          files: dist/fuqr.zip
       
       - run: echo "🍏 This job's status is ${{ job.status }}."
