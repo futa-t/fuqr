@@ -26,9 +26,15 @@ jobs:
       - name: build pyinstaller
         run: uv run pyinstaller .\src\fuqr\__main__.py --onefile --noconsole --add-data "favicon.ico;." --icon=.\favicon.ico --name fuqr
 
-      - name: zip
-        run: Compress-Archive -Path .\dist\fuqr.exe  -DestinationPath .\dist\fuqr.zip
-
+      # - name: zip
+      #   run: Compress-Archive -Path .\dist\fuqr.exe  -DestinationPath .\dist\fuqr.zip
+     
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: fuqr.zip
+          directory: dist
   
       - name: Release
         uses: softprops/action-gh-release@v2
