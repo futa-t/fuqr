@@ -1,6 +1,10 @@
 name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+on: 
+  push:
+    tags:
+      - 'v*'
+      
 jobs:
   Explore-GitHub-Actions:
     runs-on: windows-latest
@@ -15,4 +19,16 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+      - name: install uv
+        uses: astral-sh/setup-uv@v3
+        
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
+
+      - name: build pyinstaller
+        run: build.ps1
+        
       - run: echo "🍏 This job's status is ${{ job.status }}."
