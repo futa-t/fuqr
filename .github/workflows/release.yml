@@ -28,15 +28,19 @@ jobs:
       - name: zip
         run: Compress-Archive -Path .\dist\fuqr.exe  -DestinationPath .\dist\fuqr.zip
       
-      - name: upload
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: upload
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1.0.1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: .\dist\fuqr.zip
+      #     asset_name: fuqr.zip
+      #     asset_content_type: application/zip
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: .\dist\fuqr.zip
-          asset_name: fuqr.zip
-          asset_content_type: application/zip
+          files: .\dist\fuqr.zip
       
       - run: echo "🍏 This job's status is ${{ job.status }}."
