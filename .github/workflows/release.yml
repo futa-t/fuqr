@@ -29,6 +29,6 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: build pyinstaller
-        run: build.ps1
+        run: uv run pyinstaller .\src\fuqr\__main__.py --onefile --noconsole --add-data "favicon.ico;." --icon=.\favicon.ico --name fuqr
         
       - run: echo "🍏 This job's status is ${{ job.status }}."
