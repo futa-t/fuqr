@@ -8,7 +8,7 @@ permissions:
   contents: write   
 
 jobs:
-  Build And Release:
+  BuildAndRelease:
     runs-on: windows-latest
     steps:
       - name: Check out repository code
