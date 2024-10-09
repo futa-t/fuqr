@@ -1,21 +1,48 @@
-import time
+import threading
 import tkinter
-from typing import Any
+from datetime import datetime as dt
 
 import cv2
 import mss
+import mss.tools
 import numpy as np
+from mss.screenshot import ScreenShot
 
 _TRANSPARENTCOLOR = "hotpink2"
 
 
-def screenshot_to_ndarray(x: int, y: int, width: int, height: int) -> np.ndarray | None:
-    bbox = {"top": y, "left": x, "width": width, "height": height}
-
+def _ss(x, y, width, height) -> ScreenShot | None:
     try:
+        bbox = {"top": y, "left": x, "width": width, "height": height}
+
         with mss.mss() as sct:
             ss = sct.grab(bbox)
+        return ss
+    except Exception:
+        return None
+
+
+def screenshot_to_ndarray(x, y, width, height) -> np.ndarray | None:
+    if ss := _ss(x, y, width, height):
         return np.array(ss)
+
+
+def screenshot_to_png(x, y, width, height) -> str | None:
+    file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
+    try:
+        if ss := _ss(x, y, width, height):
+            mss.tools.to_png(ss.rgb, ss.size, output=file_name)
+            return file_name
+    except Exception:
+        return None
+
+
+def analyze_from_ss(x, y, width, height) -> str | None:
+    try:
+        ss = screenshot_to_ndarray(x, y, width, height)
+        r, _, _ = cv2.QRCodeDetector().detectAndDecode(ss)
+        if r:
+            return r
     except Exception:
         return None
 
@@ -36,6 +63,7 @@ class QrReader:
 
         self.default_msg = "QRコードを枠内に納めてください"
         self.qr_value = None
+        self.msg = None
 
         self.last_size = self._root.geometry()
 
@@ -54,9 +82,9 @@ class QrReader:
         f_save.propagate(False)
         f_save.pack(fill=tkinter.X, pady=2)
 
-        tkinter.Button(f_save, text="オリジナルを保存").place(
-            x=0, y=0, relheight=1, relwidth=0.49
-        )
+        tkinter.Button(
+            f_save, text="スクリーンショットを保存", command=self.screenshot
+        ).place(x=0, y=0, relheight=1, relwidth=0.49)
         tkinter.Button(f_save, text="エンコードしなおして保存").place(
             relx=0.51, rely=0, relheight=1, relwidth=0.49
         )
@@ -69,28 +97,52 @@ class QrReader:
             relx=0.51, rely=0, relheight=1, relwidth=0.49
         )
 
+        self.reader_info = None
+        self._root.bind("<Configure>", self.on_move)
+
         self.loop()
+
+        self.th_analyze = threading.Thread(target=self.th_loop, daemon=True)
+        self.th_flg = threading.Event()
+        self.th_analyze.start()
 
         self._root.wait_window()
 
+    def on_move(self, e: tkinter.Event):
+        self._root.update_idletasks()
+        x = self._reader.winfo_rootx()
+        y = self._reader.winfo_rooty()
+
+        w = self._reader.winfo_width()
+        h = self._reader.winfo_height()
+
+        self.reader_info = (x, y, w, h)
+
+    def th_loop(self):
+        while not self.th_flg.wait(0.5):
+            self.capture_analyze()
+
     def loop(self):
-        self.capture()
+        if self.qr_value:
+            self.var_msg.set(self.qr_value)
+        elif self.msg:
+            self.var_msg.set(self.msg)
         self._root.after(500, self.loop)
 
-    def capture(self):
-        self._root.update_idletasks()
-
-        x = self._root.winfo_rootx()
-        y = self._root.winfo_rooty()
-
-        w = self._root.winfo_width()
-        h = self._root.winfo_height()
-
+    def capture_analyze(self):
         try:
-            img = screenshot_to_ndarray(x, y, w, h)
-            _, d, _, _ = cv2.QRCodeDetector().detectAndDecodeMulti(img)
-            if d[0]:
-                self.qr_value = d[0]
-                self.var_msg.set(d[0])
+            if qr_value := analyze_from_ss(*self.reader_info):
+                self.qr_value = self.msg = qr_value
+            else:
+                self.qr_value = None
+                self.msg = self.default_msg
         except Exception:
-            self.var_msg.set(self.default_msg)
+            self.qr_value = None
+            self.msg = self.default_msg
+
+    def screenshot(self):
+        try:
+            if f := screenshot_to_png(*self.reader_info):
+                self.msg = f
+        except Exception:
+            pass
