@@ -45,8 +45,14 @@ def screenshot_to_png(x, y, width, height) -> str | None:
     file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
     try:
         if ss := _ss(x, y, width, height):
-            mss.tools.to_png(ss.rgb, ss.size, output=file_name)
-            return file_name
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".png",
+                filetypes=[("PNG files", "*.png")],
+                initialfile=file_name,
+            )
+            if file_path:
+                mss.tools.to_png(ss.rgb, ss.size, output=file_path)
+            return file_path
     except Exception:
         return None
 
@@ -66,6 +72,7 @@ def save_qrcode_window(value: str):
 
     t = tkinter.Toplevel(padx=8, pady=4)
     t.title(value)
+    t.iconbitmap(ICON)
     imtk_qr = ImageTk.PhotoImage(im_qr)
 
     tkinter.Label(t, image=imtk_qr).pack(fill=tkinter.BOTH, expand=True)
