@@ -1,3 +1,4 @@
 import fuqr
 
-fuqr.QrReader()
+if __name__ == "__main__":
+    fuqr.QrReader()

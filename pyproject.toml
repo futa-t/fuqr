@@ -1,9 +1,12 @@
 [project]
 name = "fuqr"
-version = "0.1.0"
-description = "Add your description here"
+description = "デスクトップQRコード読み取りソフト"
+authors = [
+  { name = "futa-t" },
+]
 readme = "README.md"
 requires-python = ">=3.12"
+dynamic = ["version"]
 dependencies = [
     "mss>=9.0.2",
     "numpy>=2.1.2",
@@ -12,7 +15,15 @@ dependencies = [
     "qrcode>=8.0",
 ]
 
-[project.scripts]
+[tool.hatch.version]
+path = "src/fuqr/__init__.py"
+
+[tool.uv]
+dev-dependencies = [
+    "pyinstaller>=6.10.0",
+]
+
+[project.gui-scripts]
 fuqr = "fuqr:main"
 
 [build-system]

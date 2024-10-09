@@ -1,7 +1,9 @@
 import subprocess
+import sys
 import threading
 import tkinter
 from datetime import datetime as dt
+from pathlib import Path
 from tkinter import filedialog
 
 import cv2
@@ -12,7 +14,15 @@ import qrcode
 from mss.screenshot import ScreenShot
 from PIL import ImageTk
 
+__version__ = "0.1.1"
+
 _TRANSPARENTCOLOR = "hotpink2"
+
+try:
+    __base_path = Path(sys._MEIPASS)
+except Exception:
+    __base_path = Path().resolve()
+ICON = __base_path / "favicon.ico"
 
 
 def _ss(x, y, width, height) -> ScreenShot | None:
@@ -82,11 +92,14 @@ class QrReader:
         else:
             self._root = tkinter.Tk()
 
+        if ICON.exists():
+            self._root.iconbitmap(ICON)
+
         self._root.title("fuqr")
         self._root.geometry("300x340")
         self._root.attributes("-topmost", True)
         self._root.wm_attributes("-transparentcolor", _TRANSPARENTCOLOR)
-        self._root.wm_attributes("-toolwindow", True)
+        # self._root.wm_attributes("-toolwindow", True)
         self._root.option_add("*Button.cursor", "hand2")
 
         self.default_msg = "QRコードを認識できません"
@@ -139,7 +152,7 @@ class QrReader:
         self.th_flg = threading.Event()
         self.th_analyze.start()
 
-        self._root.wait_window()
+        self._root.mainloop()
 
     def copy_value(self):
         if self.qr_value:
@@ -192,3 +205,7 @@ class QrReader:
                 self.msg = f
         except Exception:
             pass
+
+
+def main():
+    QrReader()
