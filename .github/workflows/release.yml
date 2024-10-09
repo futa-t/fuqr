@@ -30,19 +30,19 @@ jobs:
       - name: uu
         run: echo "test" > test.txt
         
-      - name: upload
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: .\test.txt
-          asset_name: test.txt
-          asset_content_type: application/zip
-      # - name: Release
-      #   uses: softprops/action-gh-release@v2
+      # - name: upload
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1.0.1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   with:
-      #     files: .\dist\fuqr.zip
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: .\test.txt
+      #     asset_name: test.txt
+      #     asset_content_type: application/zip
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: .\test.txt
       
       - run: echo "🍏 This job's status is ${{ job.status }}."
