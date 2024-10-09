@@ -126,7 +126,7 @@ class QrReader:
             f_cmd, text="ブラウザで開く", command=self.open_browser
         )
         self.btn_open_browser.place(x=0, y=0, relheight=1, relwidth=0.49)
-        tkinter.Button(f_cmd, text="コピー").place(
+        tkinter.Button(f_cmd, text="コピー", command=self.copy_value).place(
             relx=0.51, rely=0, relheight=1, relwidth=0.49
         )
 
@@ -140,6 +140,11 @@ class QrReader:
         self.th_analyze.start()
 
         self._root.wait_window()
+
+    def copy_value(self):
+        if self.qr_value:
+            self._root.clipboard_clear()
+            self._root.clipboard_append(self.qr_value)
 
     def open_browser(self):
         if self.qr_value.startswith("http"):
