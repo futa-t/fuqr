@@ -14,7 +14,7 @@ import qrcode
 from mss.screenshot import ScreenShot
 from PIL import ImageTk
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 _TRANSPARENTCOLOR = "hotpink2"
 
