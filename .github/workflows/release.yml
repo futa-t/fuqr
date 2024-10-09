@@ -3,12 +3,12 @@ on:
   push:
     tags:
       - 'v*'
-      
+
 permissions:
   contents: write   
 
 jobs:
-  Explore-GitHub-Actions:
+  Build And Release:
     runs-on: windows-latest
     steps:
       - name: Check out repository code
