@@ -27,7 +27,7 @@ jobs:
 
       # - name: zip
       #   run: Compress-Archive -Path .\dist\fuqr.exe  -DestinationPath .\dist\fuqr.zip
-      - name: uu:
+      - name: uu
         run: echo "test" > test.txt
         
       - name: upload
