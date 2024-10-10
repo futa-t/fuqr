@@ -1,9 +1,7 @@
 import subprocess
-import sys
 import threading
 import tkinter
 from datetime import datetime as dt
-from pathlib import Path
 from tkinter import filedialog
 
 import cv2
@@ -14,15 +12,13 @@ import qrcode
 from mss.screenshot import ScreenShot
 from PIL import ImageTk
 
+from fuqr import util
+
 __version__ = "0.1.2"
 
 _TRANSPARENTCOLOR = "hotpink2"
 
-try:
-    __base_path = Path(sys._MEIPASS)
-except Exception:
-    __base_path = Path().resolve()
-ICON = __base_path / "favicon.ico"
+_ICON = util.gen_icon_path()
 
 
 def _ss(x, y, width, height) -> ScreenShot | None:
@@ -72,7 +68,7 @@ def save_qrcode_window(value: str):
 
     t = tkinter.Toplevel(padx=8, pady=4)
     t.title(value)
-    t.iconbitmap(ICON)
+    t.iconbitmap(_ICON)
     imtk_qr = ImageTk.PhotoImage(im_qr)
 
     tkinter.Label(t, image=imtk_qr).pack(fill=tkinter.BOTH, expand=True)
@@ -93,14 +89,14 @@ def save_qrcode_window(value: str):
 
 
 class QrReader:
-    def __init__(self, master: tkinter.Tk | tkinter.Toplevel = None):
+    def __init__(self, master: tkinter.Misc = None):
         if master:
             self._root = tkinter.Toplevel(master)
         else:
             self._root = tkinter.Tk()
 
-        if ICON.exists():
-            self._root.iconbitmap(ICON)
+        if _ICON.exists():
+            self._root.iconbitmap(_ICON)
 
         self._root.title("fuqr")
         self._root.geometry("300x340")
@@ -220,7 +216,3 @@ class QrReader:
                 self.msg = f
         except Exception:
             pass
-
-
-def main():
-    QrReader()
