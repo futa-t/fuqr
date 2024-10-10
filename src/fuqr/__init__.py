@@ -159,7 +159,13 @@ class QrReader:
         self.th_flg = threading.Event()
         self.th_analyze.start()
 
-        self._root.mainloop()
+    def run(self):
+        match type(self._root):
+            case tkinter.Tk:
+                self._root.mainloop()
+            case tkinter.Toplevel:
+                self._root.wait_window()
+        self.th_flg.set()
 
     def copy_value(self):
         if self.qr_value:
