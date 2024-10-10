@@ -106,7 +106,6 @@ class QrReader:
         self._root.geometry("300x340")
         self._root.attributes("-topmost", True)
         self._root.wm_attributes("-transparentcolor", _TRANSPARENTCOLOR)
-        # self._root.wm_attributes("-toolwindow", True)
         self._root.option_add("*Button.cursor", "hand2")
 
         self.default_msg = "QRコードを認識できません"
@@ -157,6 +156,7 @@ class QrReader:
 
         self.th_analyze = threading.Thread(target=self.th_loop, daemon=True)
         self.th_flg = threading.Event()
+        self.th_lock = threading.Lock()
         self.th_analyze.start()
 
     def run(self):
@@ -192,7 +192,9 @@ class QrReader:
 
     def th_loop(self):
         while not self.th_flg.wait(0.5):
-            self.capture_analyze()
+            with self.th_lock:
+                self.capture_analyze()
+        self.th_flg.clear()
 
     def loop(self):
         if self.qr_value:
