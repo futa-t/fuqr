@@ -7,17 +7,18 @@ from fuqr import util
 
 
 class QrGenerator:
-    def __init__(self, master: tkinter.Misc = None, value: str = None):
+    def __init__(self, master: tkinter.Misc = None):
         if master:
             self._root = tkinter.Toplevel(master)
         else:
             self._root = tkinter.Tk()
 
         self._root.title("QR作成")
+        self._root.minsize(300, 0)
         self._root.iconbitmap(util.gen_icon_path())
 
-        self.lbl_qr = tkinter.Label(self._root)
-        self.lbl_qr.pack(fill=tkinter.BOTH, expand=True)
+        self.lbl_qr = tkinter.Label(self._root, text="文字列を入力してください")
+        self.lbl_qr.pack(side=tkinter.TOP)
         self._size_qr = (300, 300)
         self._value = tkinter.StringVar(value=value)
         tkinter.Entry(self._root, textvariable=self._value).pack(fill=tkinter.X)
@@ -43,5 +44,5 @@ class QrGenerator:
 
 
 if __name__ == "__main__":
-    qg = QrGenerator(value="aiueo")
+    qg = QrGenerator()
     qg.run()
