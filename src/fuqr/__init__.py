@@ -1,14 +1,8 @@
-import subprocess
 import threading
 import tkinter
-from datetime import datetime as dt
-from tkinter import filedialog
 
 import cv2
-import mss
-import mss.tools
-import numpy as np
-from mss.screenshot import ScreenShot
+import pyperclip
 
 from fuqr import util
 from fuqr.generator import QrGenerator
@@ -18,48 +12,6 @@ __version__ = "0.1.3"
 _TRANSPARENTCOLOR = "hotpink2"
 
 _ICON = util.gen_icon_path()
-
-
-def _ss(x, y, width, height) -> ScreenShot | None:
-    try:
-        bbox = {"top": y, "left": x, "width": width, "height": height}
-
-        with mss.mss() as sct:
-            ss = sct.grab(bbox)
-        return ss
-    except Exception:
-        return None
-
-
-def screenshot_to_ndarray(x, y, width, height) -> np.ndarray | None:
-    if ss := _ss(x, y, width, height):
-        return np.array(ss)
-
-
-def screenshot_to_png(x, y, width, height) -> str | None:
-    file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
-    try:
-        if ss := _ss(x, y, width, height):
-            file_path = filedialog.asksaveasfilename(
-                defaultextension=".png",
-                filetypes=[("PNG files", "*.png")],
-                initialfile=file_name,
-            )
-            if file_path:
-                mss.tools.to_png(ss.rgb, ss.size, output=file_path)
-            return file_path
-    except Exception:
-        return None
-
-
-def analyze_from_ss(x, y, width, height) -> str | None:
-    try:
-        ss = screenshot_to_ndarray(x, y, width, height)
-        r, _, _ = cv2.QRCodeDetector().detectAndDecode(ss)
-        if r:
-            return r
-    except Exception:
-        return None
 
 
 class QrReader:
@@ -139,12 +91,10 @@ class QrReader:
 
     def copy_value(self):
         if self.qr_value:
-            self._root.clipboard_clear()
-            self._root.clipboard_append(self.qr_value)
+            pyperclip.copy(self.qr_value)
 
     def open_browser(self):
-        if self.qr_value.startswith("http"):
-            subprocess.Popen(["explorer", self.qr_value])
+        util.open_browser(self.qr_value)
 
     def encode_save(self):
         if self.qr_value:
@@ -175,9 +125,18 @@ class QrReader:
             self.var_msg.set(self.msg)
         self._root.after(500, self.loop)
 
+    def analyze_from_ss(self, x, y, width, height) -> str | None:
+        try:
+            ss = util.screenshot_to_ndarray(x, y, width, height)
+            r, _, _ = cv2.QRCodeDetector().detectAndDecode(ss)
+            if r:
+                return r
+        except Exception:
+            return None
+
     def capture_analyze(self):
         try:
-            if qr_value := analyze_from_ss(*self.reader_info):
+            if qr_value := self.analyze_from_ss(*self.reader_info):
                 self.qr_value = self.msg = qr_value
             else:
                 self.qr_value = None
@@ -188,7 +147,7 @@ class QrReader:
 
     def screenshot(self):
         try:
-            if f := screenshot_to_png(*self.reader_info):
+            if f := util.screenshot_to_png(*self.reader_info):
                 self.msg = f
         except Exception:
             pass
