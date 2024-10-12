@@ -1,106 +1,28 @@
-import subprocess
-import sys
 import threading
 import tkinter
-from datetime import datetime as dt
-from pathlib import Path
-from tkinter import filedialog
 
 import cv2
-import mss
-import mss.tools
-import numpy as np
-import qrcode
-from mss.screenshot import ScreenShot
-from PIL import ImageTk
+import pyperclip
 
-__version__ = "0.1.2"
+from fuqr import util
+from fuqr.generator import QrGenerator
+
+__version__ = "0.1.3"
 
 _TRANSPARENTCOLOR = "hotpink2"
 
-try:
-    __base_path = Path(sys._MEIPASS)
-except Exception:
-    __base_path = Path().resolve()
-ICON = __base_path / "favicon.ico"
-
-
-def _ss(x, y, width, height) -> ScreenShot | None:
-    try:
-        bbox = {"top": y, "left": x, "width": width, "height": height}
-
-        with mss.mss() as sct:
-            ss = sct.grab(bbox)
-        return ss
-    except Exception:
-        return None
-
-
-def screenshot_to_ndarray(x, y, width, height) -> np.ndarray | None:
-    if ss := _ss(x, y, width, height):
-        return np.array(ss)
-
-
-def screenshot_to_png(x, y, width, height) -> str | None:
-    file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
-    try:
-        if ss := _ss(x, y, width, height):
-            file_path = filedialog.asksaveasfilename(
-                defaultextension=".png",
-                filetypes=[("PNG files", "*.png")],
-                initialfile=file_name,
-            )
-            if file_path:
-                mss.tools.to_png(ss.rgb, ss.size, output=file_path)
-            return file_path
-    except Exception:
-        return None
-
-
-def analyze_from_ss(x, y, width, height) -> str | None:
-    try:
-        ss = screenshot_to_ndarray(x, y, width, height)
-        r, _, _ = cv2.QRCodeDetector().detectAndDecode(ss)
-        if r:
-            return r
-    except Exception:
-        return None
-
-
-def save_qrcode_window(value: str):
-    im_qr = qrcode.make(value)
-
-    t = tkinter.Toplevel(padx=8, pady=4)
-    t.title(value)
-    t.iconbitmap(ICON)
-    imtk_qr = ImageTk.PhotoImage(im_qr)
-
-    tkinter.Label(t, image=imtk_qr).pack(fill=tkinter.BOTH, expand=True)
-    tkinter.Label(t, text=value).pack(fill=tkinter.X, pady=4)
-
-    def save():
-        file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}_regen.png"
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".png",
-            filetypes=[("PNG files", "*.png")],
-            initialfile=file_name,
-        )
-        if file_path:
-            im_qr.save(file_path)
-
-    tkinter.Button(t, text="保存", command=save).pack(fill=tkinter.X, pady=4)
-    t.wait_window()
+_ICON = util.gen_icon_path()
 
 
 class QrReader:
-    def __init__(self, master: tkinter.Tk | tkinter.Toplevel = None):
+    def __init__(self, master: tkinter.Misc = None):
         if master:
             self._root = tkinter.Toplevel(master)
         else:
             self._root = tkinter.Tk()
 
-        if ICON.exists():
-            self._root.iconbitmap(ICON)
+        if _ICON.exists():
+            self._root.iconbitmap(_ICON)
 
         self._root.title("fuqr")
         self._root.geometry("300x340")
@@ -169,16 +91,16 @@ class QrReader:
 
     def copy_value(self):
         if self.qr_value:
-            self._root.clipboard_clear()
-            self._root.clipboard_append(self.qr_value)
+            pyperclip.copy(self.qr_value)
 
     def open_browser(self):
-        if self.qr_value.startswith("http"):
-            subprocess.Popen(["explorer", self.qr_value])
+        util.open_browser(self.qr_value)
 
     def encode_save(self):
         if self.qr_value:
-            save_qrcode_window(self.qr_value)
+            gen = QrGenerator(self._root)
+            gen.generate(self.qr_value)
+            gen.run()
 
     def on_move(self, e: tkinter.Event):
         self._root.update_idletasks()
@@ -203,9 +125,18 @@ class QrReader:
             self.var_msg.set(self.msg)
         self._root.after(500, self.loop)
 
+    def analyze_from_ss(self, x, y, width, height) -> str | None:
+        try:
+            ss = util.screenshot_to_ndarray(x, y, width, height)
+            r, _, _ = cv2.QRCodeDetector().detectAndDecode(ss)
+            if r:
+                return r
+        except Exception:
+            return None
+
     def capture_analyze(self):
         try:
-            if qr_value := analyze_from_ss(*self.reader_info):
+            if qr_value := self.analyze_from_ss(*self.reader_info):
                 self.qr_value = self.msg = qr_value
             else:
                 self.qr_value = None
@@ -216,11 +147,7 @@ class QrReader:
 
     def screenshot(self):
         try:
-            if f := screenshot_to_png(*self.reader_info):
+            if f := util.screenshot_to_png(*self.reader_info):
                 self.msg = f
         except Exception:
             pass
-
-
-def main():
-    QrReader()
