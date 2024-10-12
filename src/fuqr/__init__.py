@@ -8,13 +8,12 @@ import cv2
 import mss
 import mss.tools
 import numpy as np
-import qrcode
 from mss.screenshot import ScreenShot
-from PIL import ImageTk
 
 from fuqr import util
+from fuqr.generator import QrGenerator
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 _TRANSPARENTCOLOR = "hotpink2"
 
@@ -61,31 +60,6 @@ def analyze_from_ss(x, y, width, height) -> str | None:
             return r
     except Exception:
         return None
-
-
-def save_qrcode_window(value: str):
-    im_qr = qrcode.make(value)
-
-    t = tkinter.Toplevel(padx=8, pady=4)
-    t.title(value)
-    t.iconbitmap(_ICON)
-    imtk_qr = ImageTk.PhotoImage(im_qr)
-
-    tkinter.Label(t, image=imtk_qr).pack(fill=tkinter.BOTH, expand=True)
-    tkinter.Label(t, text=value).pack(fill=tkinter.X, pady=4)
-
-    def save():
-        file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}_regen.png"
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".png",
-            filetypes=[("PNG files", "*.png")],
-            initialfile=file_name,
-        )
-        if file_path:
-            im_qr.save(file_path)
-
-    tkinter.Button(t, text="保存", command=save).pack(fill=tkinter.X, pady=4)
-    t.wait_window()
 
 
 class QrReader:
@@ -174,7 +148,9 @@ class QrReader:
 
     def encode_save(self):
         if self.qr_value:
-            save_qrcode_window(self.qr_value)
+            gen = QrGenerator(self._root)
+            gen.generate(self.qr_value)
+            gen.run()
 
     def on_move(self, e: tkinter.Event):
         self._root.update_idletasks()

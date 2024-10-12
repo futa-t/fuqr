@@ -137,10 +137,14 @@ class QrGenerator:
 
     def _get_value(self, e):
         self._value = self.txt_value.get("1.0", "end-1c")
-        self.generate_qrcode(self._value)
+        self._generate_qrcode(self._value)
         self.txt_value.edit_modified(False)
 
-    def generate_qrcode(self, value):
+    def _set_value(self, value):
+        self.txt_value.delete("1.0", "end")
+        self.txt_value.insert("1.0", value)
+
+    def _generate_qrcode(self, value):
         try:
             match self.lbl_qr.generate(value):
                 case QrImageResult.SUCCESS:
@@ -152,6 +156,10 @@ class QrGenerator:
                     self._show_error("無効な入力です")
         except Exception as e:
             self._show_error(f"予期せぬエラーが発生しました: {str(e)}")
+
+    def generate(self, value):
+        self._set_value(value)
+        self._generate_qrcode(value)
 
     def _show_error(self, message):
         self._msg.set(message)
