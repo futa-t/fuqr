@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 from qrcode.exceptions import DataOverflowError
 from qrcode.image.pil import PilImage
 
-from fuqr import util
+from fuqr.util import gen_icon_path
 
 
 class QrImageResult(Enum):
@@ -84,6 +84,15 @@ class QrImage(tkinter.Label):
     def save_to_png(self, filename: str):
         self._img.save(filename)
 
+    def open_save_dialog(self):
+        file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
+        if file_path := filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png")],
+            initialfile=file_name,
+        ):
+            self.save_to_png(file_path)
+
 
 class QrGenerator:
     def __init__(self, master: tkinter.Misc = None):
@@ -94,7 +103,7 @@ class QrGenerator:
 
         self._root.title("QR作成")
         self._root.minsize(300, 0)
-        self._root.iconbitmap(util.gen_icon_path())
+        self._root.iconbitmap(gen_icon_path())
         self._root.option_add("*Button.Cursor", "hand2")
 
         f = tkinter.Frame(self._root, padx=4)
@@ -114,22 +123,17 @@ class QrGenerator:
         self.txt_value.focus()
 
         self.btn_save = tkinter.Button(
-            f, text="保存", width=5, state="disabled", command=self.save_to_png
+            f,
+            text="保存",
+            width=5,
+            state="disabled",
+            command=self.lbl_qr.open_save_dialog,
         )
         self.btn_save.pack(pady=2)
 
         self._msg = tkinter.StringVar()
         lbl_status = tkinter.Label(f, textvariable=self._msg)
         lbl_status.pack(fill=tkinter.X, side=tkinter.BOTTOM)
-
-    def save_to_png(self):
-        file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
-        if file_path := filedialog.asksaveasfilename(
-            defaultextension=".png",
-            filetypes=[("PNG files", "*.png")],
-            initialfile=file_name,
-        ):
-            self.lbl_qr.save_to_png(file_path)
 
     def on_txt_keyrelease(self, e: tkinter.Event):
         value = self.txt_value.get("1.0", "end-1c")
@@ -171,6 +175,18 @@ class QrGenerator:
                 self._root.mainloop()
             case tkinter.Toplevel:
                 self._root.wait_window()
+
+
+def generate_once(value: str):
+    t = tkinter.Tk()
+    t.iconbitmap(gen_icon_path())
+    t.title(value)
+    qr = QrImage(t, value=value)
+    qr.pack(fill=tkinter.BOTH, expand=True)
+    tkinter.Button(t, text="保存", command=qr.open_save_dialog).pack(
+        fill=tkinter.X, pady=4, padx=4
+    )
+    t.mainloop()
 
 
 if __name__ == "__main__":

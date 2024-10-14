@@ -1,3 +1,4 @@
+# ruff: noqa: F403
 import threading
 import tkinter
 
@@ -5,7 +6,8 @@ import cv2
 import pyperclip
 
 from fuqr import const, util
-from fuqr.generator import QrGenerator
+from fuqr.generator import QrGenerator, generate_once
+from fuqr.reader import QrReader, read_once
 from fuqr.types import BBox
 
 __version__ = "0.1.3"

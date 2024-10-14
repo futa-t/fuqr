@@ -165,6 +165,5 @@ def read_once() -> str:
 
 
 if __name__ == "__main__":
-    print(read_once())
-    # qr = QrReader()
-    # qr.run()
+    qr = QrReader()
+    qr.run()
