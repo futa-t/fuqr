@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.hatch.version]
-path = "src/fuqr/__init__.py"
+path = "src/fuqr/common.py"
 
 [tool.uv]
 dev-dependencies = [
@@ -30,3 +30,6 @@ fuqr = "fuqr:__main__"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+ignore=["F401"]

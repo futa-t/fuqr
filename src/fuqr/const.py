@@ -1,0 +1,1 @@
+TRANSPARENTCOLOR = "hotpink2"
