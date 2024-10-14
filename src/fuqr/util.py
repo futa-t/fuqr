@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import threading
 from datetime import datetime as dt
 from pathlib import Path
 from tkinter import filedialog
@@ -7,6 +8,8 @@ from tkinter import filedialog
 import mss
 import numpy as np
 from mss.screenshot import ScreenShot
+
+from fuqr.types import BBox
 
 
 def gen_icon_path():
@@ -17,26 +20,24 @@ def gen_icon_path():
     return __base_path / "favicon.ico"
 
 
-def _ss(x: int, y: int, width: int, height: int) -> ScreenShot | None:
+def _ss(bbox: BBox) -> ScreenShot | None:
     try:
-        bbox = {"top": y, "left": x, "width": width, "height": height}
-
         with mss.mss() as sct:
-            ss = sct.grab(bbox)
+            ss = sct.grab(bbox.__dict__)
         return ss
     except Exception:
         return None
 
 
-def screenshot_to_ndarray(x: int, y: int, width: int, height: int) -> np.ndarray | None:
-    if ss := _ss(x, y, width, height):
+def screenshot_to_ndarray(bbox: BBox) -> np.ndarray | None:
+    if ss := _ss(bbox):
         return np.array(ss)
 
 
-def screenshot_to_png(x, y, width, height) -> str | None:
+def screenshot_to_png(bbox: BBox) -> str | None:
     file_name = f"{dt.now().strftime("%Y_%m_%d_%H%M%S")}.png"
     try:
-        if ss := _ss(x, y, width, height):
+        if ss := _ss(bbox):
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".png",
                 filetypes=[("PNG files", "*.png")],
@@ -53,3 +54,10 @@ def open_browser(url: str, prog: str = "explorer"):
     if url.startswith("http"):
         cmd = f'{prog} "{url}"'
         subprocess.run(cmd)
+
+
+class Thread(threading.Thread):
+    def __init__(self, *args, **kwgs):
+        super().__init__(*args, **kwgs)
+        self.stop_event = threading.Event()
+        self.lock = threading.Lock()

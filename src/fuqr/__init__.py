@@ -4,12 +4,11 @@ import tkinter
 import cv2
 import pyperclip
 
-from fuqr import util
+from fuqr import const, util
 from fuqr.generator import QrGenerator
+from fuqr.types import BBox
 
 __version__ = "0.1.3"
-
-_TRANSPARENTCOLOR = "hotpink2"
 
 _ICON = util.gen_icon_path()
 
@@ -27,7 +26,7 @@ class QrReader:
         self._root.title("fuqr")
         self._root.geometry("300x340")
         self._root.attributes("-topmost", True)
-        self._root.wm_attributes("-transparentcolor", _TRANSPARENTCOLOR)
+        self._root.wm_attributes("-transparentcolor", const.TRANSPARENTCOLOR)
         self._root.option_add("*Button.cursor", "hand2")
 
         self.default_msg = "QRコードを認識できません"
@@ -41,7 +40,7 @@ class QrReader:
         f = tkinter.Frame(self._root, padx=4, pady=4)
         f.pack(fill=tkinter.BOTH, expand=True)
 
-        self._reader = tkinter.Frame(f, bg=_TRANSPARENTCOLOR)
+        self._reader = tkinter.Frame(f, bg=const.TRANSPARENTCOLOR)
         self._reader.pack(fill=tkinter.BOTH, expand=True)
 
         self.var_msg = tkinter.StringVar(value=self.default_msg)
@@ -71,7 +70,7 @@ class QrReader:
             relx=0.51, rely=0, relheight=1, relwidth=0.49
         )
 
-        self.reader_info = None
+        self.reader_info = BBox(0, 0, 0, 0)
         self._root.bind("<Configure>", self.on_move)
 
         self.loop()
@@ -104,13 +103,11 @@ class QrReader:
 
     def on_move(self, e: tkinter.Event):
         self._root.update_idletasks()
-        x = self._reader.winfo_rootx()
-        y = self._reader.winfo_rooty()
+        self.reader_info.left = self._reader.winfo_rootx()
+        self.reader_info.top = self._reader.winfo_rooty()
 
-        w = self._reader.winfo_width()
-        h = self._reader.winfo_height()
-
-        self.reader_info = (x, y, w, h)
+        self.reader_info.width = self._reader.winfo_width()
+        self.reader_info.height = self._reader.winfo_height()
 
     def th_loop(self):
         while not self.th_flg.wait(0.5):
@@ -125,9 +122,9 @@ class QrReader:
             self.var_msg.set(self.msg)
         self._root.after(500, self.loop)
 
-    def analyze_from_ss(self, x, y, width, height) -> str | None:
+    def analyze_from_ss(self, bbox: BBox) -> str | None:
         try:
-            ss = util.screenshot_to_ndarray(x, y, width, height)
+            ss = util.screenshot_to_ndarray(bbox)
             r, _, _ = cv2.QRCodeDetector().detectAndDecode(ss)
             if r:
                 return r
@@ -136,7 +133,7 @@ class QrReader:
 
     def capture_analyze(self):
         try:
-            if qr_value := self.analyze_from_ss(*self.reader_info):
+            if qr_value := self.analyze_from_ss(self.reader_info):
                 self.qr_value = self.msg = qr_value
             else:
                 self.qr_value = None
@@ -147,7 +144,7 @@ class QrReader:
 
     def screenshot(self):
         try:
-            if f := util.screenshot_to_png(*self.reader_info):
+            if f := util.screenshot_to_png(self.reader_info):
                 self.msg = f
         except Exception:
             pass
