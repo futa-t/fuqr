@@ -25,7 +25,7 @@ dev-dependencies = [
 ]
 
 [project.gui-scripts]
-fuqr = "fuqr:__main__"
+fuqr = "fuqr:main"
 
 [build-system]
 requires = ["hatchling"]
