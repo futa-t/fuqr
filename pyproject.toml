@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.hatch.version]
-path = "src/fuqr/__init__.py"
+path = "src/fuqr/common.py"
 
 [tool.uv]
 dev-dependencies = [

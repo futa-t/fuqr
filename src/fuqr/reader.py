@@ -51,7 +51,7 @@ class QrReaderFrame(tkinter.Frame):
 
     def on_move(self, e: tkinter.Event):
         try:
-            self._toplevel.update()
+            self._toplevel.update_idletasks()
             self.bbox.top = self.winfo_rooty()
             self.bbox.left = self.winfo_rootx()
             self.bbox.width = self.winfo_width()
