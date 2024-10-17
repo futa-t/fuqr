@@ -17,14 +17,11 @@ windowsデスクトップでQRコードを読み取るだけのやつです
 ### git cloneする場合
 1. `uv sync --all-extras --dev`
 
-2. a. `build.ps1`を実行する。または`build.ps1`内のスクリプトを実行する  
-    pyinstallerを使って実行ファイルを作ります。distに実行ファイルが作成されるのでパス通ってる場所なりデスクトップなりに配置してください。この方法はアイコンがちゃんと反映されます
-
-    b. `.venv/scripts/pythonw.exe`のショートカットを作る  
+2.  a. `.venv/scripts/pythonw.exe`のショートカットを作る  
     作業ディレクトリを`/path/to/fuqr`、リンク先に`-m fuqr`を追記  
     アイコンの変更で`favicon.ico`設定してあげるとアイコンも反映されます。タスクバーに固定するとpythonのアイコンになりますが
 
-    c. `uv tool install .`でuvのツールとしてインストールする  
+    b. `uv tool install .`でuvのツールとしてインストールする  
     `~/.local/bin`に実行ファイルが作成されます。アイコンは反映されません
 
 ### コードはいらない場合

@@ -32,15 +32,18 @@ class FuQr:
         self._root.option_add("*Button.cursor", "hand2")
         self._root.option_add("*Font", ("Meiryo UI", 10))
 
-        self.reader = QrReaderFrame(self._root)
+        f = tkinter.Frame(self._root, padx=4, pady=4)
+        f.pack(fill=tkinter.BOTH, expand=True)
+
+        self.reader = QrReaderFrame(f)
         self.reader.pack(fill=tkinter.BOTH, expand=True)
 
         lbl_value = tkinter.Label(
-            self._root, textvariable=self.reader.variable, anchor=tkinter.W
+            f, textvariable=self.reader.variable, anchor=tkinter.W
         )
         lbl_value.pack(fill=tkinter.X, pady=2)
 
-        f_save = tkinter.Frame(self._root, height=24)
+        f_save = tkinter.Frame(f, height=24)
         f_save.propagate(False)
         f_save.pack(fill=tkinter.X, pady=2)
 
@@ -53,7 +56,7 @@ class FuQr:
             command=self.encode_save,
         ).place(relx=0.51, rely=0, relheight=1, relwidth=0.49)
 
-        f_cmd = tkinter.Frame(self._root, height=24)
+        f_cmd = tkinter.Frame(f, height=24)
         f_cmd.propagate(False)
         f_cmd.pack(fill=tkinter.X, pady=2)
         self.btn_open_browser = tkinter.Button(
