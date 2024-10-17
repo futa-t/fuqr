@@ -25,7 +25,12 @@ jobs:
 
       - name: build pyinstaller
         run: uv run pyinstaller .\src\fuqr\__main__.py --onefile --noconsole --add-data "favicon.ico;." --icon=.\favicon.ico --name fuqr
-      
+
+      - name: cp license
+        run: cp LICENSE dist/LICENSE.txt
+      - name: cp ReadMe
+        run: cp README.md dist/
+        
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
