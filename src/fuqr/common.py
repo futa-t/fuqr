@@ -91,8 +91,9 @@ class FuQr:
         t.wait_window()
 
     def copy_value(self):
-        if self.reader.value:
-            pyperclip.copy(self.reader.value)
+        value = self.reader.variable.get()
+        if value:
+            pyperclip.copy(value)
             self.update_status("コピーしました")
         else:
             self.update_status("コピーに失敗しました。結果がありません")
@@ -106,16 +107,17 @@ class FuQr:
         self._root.after(sec * 1000, self.update_status_loop)
 
     def open_browser(self):
-        match self.reader.value:
+        match self.reader.variable.get():
             case str(v) if v.startswith("http"):
                 util.open_browser(v)
             case _:
                 self.update_status("URL形式ではありません")
 
     def encode_save(self):
-        if self.reader.value:
+        value = self.reader.variable.get()
+        if value:
             gen = QrGenerator(self._root)
-            gen.generate(self.reader.value)
+            gen.generate(value)
             gen.run()
 
     def update_status_loop(self, *args):

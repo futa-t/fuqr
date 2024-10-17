@@ -129,7 +129,7 @@ class QrReader:
 
     def copy(self):
         if self.reader.value:
-            pyperclip.copy(self.reader.value)
+            pyperclip.copy(self.reader.variable.get())
             self.btn_txt_copy.set("コピーしました")
             self._root.after(1000, lambda *args: self.btn_txt_copy.set("コピー"))
 
