@@ -1,1 +1,0 @@
-uv run pyinstaller .\src\fuqr\__main__.py --onefile --noconsole --add-data "favicon.ico;." --icon=.\favicon.ico --name fuqr

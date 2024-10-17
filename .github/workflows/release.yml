@@ -22,10 +22,13 @@ jobs:
 
       - name: Install the project
         run: uv sync --all-extras --dev
+      
+      - name: Install pyinstaller
+        run: uv add --dev pyinstaller
 
       - name: build pyinstaller
         run: uv run pyinstaller .\src\fuqr\__main__.py --onefile --noconsole --add-data "favicon.ico;." --icon=.\favicon.ico --name fuqr
-
+      
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
