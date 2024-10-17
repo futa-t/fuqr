@@ -1,6 +1,10 @@
 name: fuqr Release Action
 
-on: workflow_dispatch
+on: 
+  push:
+    tags:
+      - 'v*'
+
 permissions:
   contents: write   
 
